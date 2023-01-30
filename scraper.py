@@ -1,9 +1,11 @@
 import re
 from urllib.parse import urlparse
 
+
 def scraper(url, resp):
     links = extract_next_links(url, resp)
     return [link for link in links if is_valid(link)]
+
 
 def extract_next_links(url, resp):
     # Implementation required.
@@ -16,16 +18,17 @@ def extract_next_links(url, resp):
     #         resp.raw_response.content: the content of the page!
     # Return a list with the hyperlinks (as strings) scrapped from resp.raw_response.content
     list_url = list();
-    if ( resp.status==200):
-        print("from: "+resp.raw_response.url)
-        cons = resp.raw_response.content.split(" ")
+    if (resp.status == 200):
+        print("from: " + resp.raw_response.url)
+        cons = ("" + resp.raw_response.content).split(" ")
         for con in cons:
-            if(con.startswith("href=")==False):
+            if(con.startswith("href=") == False):
                 continue
-            url=con.replace("href=", "").replace("\"", "")
+            url = con.replace("href=", "").replace("\"", "")
             print(url)
             list_url.append(url)
     return list_url
+
 
 def is_valid(url):
     # Decide whether to crawl this url or not. 
@@ -37,13 +40,13 @@ def is_valid(url):
             return False
         return not re.match(
             r".*\.(css|js|bmp|gif|jpe?g|ico"
-            + r"|png|tiff?|mid|mp2|mp3|mp4"
-            + r"|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf"
-            + r"|ps|eps|tex|ppt|pptx|doc|docx|xls|xlsx|names"
-            + r"|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso"
-            + r"|epub|dll|cnf|tgz|sha1"
-            + r"|thmx|mso|arff|rtf|jar|csv"
-            + r"|rm|smil|wmv|swf|wma|zip|rar|gz)$", parsed.path.lower())
+            +r"|png|tiff?|mid|mp2|mp3|mp4"
+            +r"|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf"
+            +r"|ps|eps|tex|ppt|pptx|doc|docx|xls|xlsx|names"
+            +r"|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso"
+            +r"|epub|dll|cnf|tgz|sha1"
+            +r"|thmx|mso|arff|rtf|jar|csv"
+            +r"|rm|smil|wmv|swf|wma|zip|rar|gz)$", parsed.path.lower())
 
     except TypeError:
         print ("TypeError for ", parsed)
