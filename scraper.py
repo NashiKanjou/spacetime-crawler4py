@@ -15,10 +15,17 @@ def extract_next_links(url, resp):
     #         resp.raw_response.url: the url, again
     #         resp.raw_response.content: the content of the page!
     # Return a list with the hyperlinks (as strings) scrapped from resp.raw_response.content
+    list_url = list();
     if ( resp.status==200):
-        print(resp.raw_response.url)
-        print(resp.raw_response.content)
-    return list()
+        print("from: "+resp.raw_response.url)
+        cons = resp.raw_response.content.split(" ")
+        for con in cons:
+            if(con.startswith("href=")==False):
+                continue
+            url=con.replace("href=", "").replace("\"", "")
+            print(url)
+            list_url.append(url)
+    return list_url
 
 def is_valid(url):
     # Decide whether to crawl this url or not. 
