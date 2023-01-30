@@ -1,6 +1,6 @@
 import re
 from urllib.parse import urlparse
-
+import codecs
 
 def scraper(url, resp):
     links = extract_next_links(url, resp)
@@ -20,7 +20,7 @@ def extract_next_links(url, resp):
     list_url = list();
     if (resp.status == 200):
         print("from: " + resp.raw_response.url)
-        cons = ("" + resp.raw_response.content).split(" ")
+        cons = codecs.decode(resp.raw_response.content).split(" ")
         for con in cons:
             if(con.startswith("href=") == False):
                 continue
