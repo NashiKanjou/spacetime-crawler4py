@@ -22,7 +22,7 @@ def extract_next_links(url, resp):
         print("from: " + resp.raw_response.url)
         cons = codecs.decode(resp.raw_response.content).split(" ")
         for con in cons:
-            if(con.startswith("href=") == False):
+            if(con.startswith("href=\"") == False):
                 continue
             url = con.replace("href=", "").replace("\"", "")
             print(url)
