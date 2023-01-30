@@ -23,11 +23,14 @@ def extract_next_links(url, resp):
         print("from: " + resp.raw_response.url)
         cons = codecs.decode(resp.raw_response.content).split(" ")
         for con in cons:
-            if(con.startswith("href=\"") == False):
-                continue
-            url = con.split("\"")[1]
-            print(url)
-            list_url.append(url)
+            if(con.startswith("href=\\\"") ):
+                url = con.split("\\\"")[1]
+                print(url)
+                list_url.append(url)
+            if(con.startswith("href=\\\'") ):
+                url = con.split("\\'")[1]
+                print(url)
+                list_url.append(url)
     return list_url
 
 
