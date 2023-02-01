@@ -7,23 +7,26 @@ searched_list_url = list();
 
 def scraper(url, resp):
     # craw
-    raw = codecs.decode(resp.raw_response.content)
-    str_word = ""
-    str_type = ""
-    bool_read = False
-    for c in raw:
-        if(c == '<'):
-            str_type = ""
-            bool_read = True
-            continue
-        if(c == '>'):
-            bool_read = False
-            str_type = str_word
-            str_word = ""
-            continue
-        if bool_read and not (str_type == "li" and str_type == "p" and str_type == "br" and str_type == "b" and str_type == "i" and str_type == "q" and str_type.startswith("h") and str_type.startswith("p style")):
-            continue
-        str_word += c
+    if (resp.status == 200):
+        raw = codecs.decode(resp.raw_response.content)
+        str_word = ""
+        str_type = ""
+        bool_read = False
+        for c in raw:
+            if(c == '<'):
+                str_type = ""
+                #save word
+                str_word = ""
+                bool_read = True
+                continue
+            if(c == '>'):
+                bool_read = False
+                str_type = str_word
+                str_word = ""
+                continue
+            if bool_read and not (str_type == "li" and str_type == "p" and str_type == "br" and str_type == "b" and str_type == "i" and str_type == "q" and str_type.startswith("h") and str_type.startswith("p style")):
+                continue
+            str_word += c
     
     links = extract_next_links(url, resp)
     return [link for link in links if is_valid(link)]
