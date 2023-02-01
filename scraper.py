@@ -4,30 +4,7 @@ import codecs
 
 searched_list_url = list();
 
-
 def scraper(url, resp):
-    # craw
-    if (resp.status == 200):
-        raw = codecs.decode(resp.raw_response.content)
-        str_word = ""
-        str_type = ""
-        bool_read = False
-        for c in raw:
-            if(c == '<'):
-                str_type = ""
-                #save word
-                str_word = ""
-                bool_read = True
-                continue
-            if(c == '>'):
-                bool_read = False
-                str_type = str_word
-                str_word = ""
-                continue
-            if bool_read and not (str_type == "li" and str_type == "p" and str_type == "br" and str_type == "b" and str_type == "i" and str_type == "q" and str_type.startswith("h") and str_type.startswith("p style")):
-                continue
-            str_word += c
-    
     links = extract_next_links(url, resp)
     return [link for link in links if is_valid(link)]
 
@@ -47,14 +24,14 @@ def extract_next_links(url, resp):
         # print("from: " + resp.raw_response.url)
         cons = codecs.decode(resp.raw_response.content).split(" ")
         for con in cons:
-            if(con.startswith("href=\'http")):
+            if(con.startswith("href=\'")):
                 url = con.split("\'")[1]
-                if(url in searched_list_url == False):
+                if (url not in searched_list_url):
                     list_url.append(url)
                     searched_list_url.append(url)
-            elif(con.startswith("href=\"http")):
+            elif(con.startswith("href=\"")):
                 url = con.split("\"")[1]
-                if(url in searched_list_url == False):
+                if (url not in searched_list_url):
                     list_url.append(url)
                     searched_list_url.append(url)
     return list_url
@@ -66,6 +43,9 @@ def is_valid(url):
     # There are already some conditions that return False.
     try:
         parsed = urlparse(url)
+        str_hostname = str(parsed.hostname)
+        if "ics.uci.edu/" not in str_hostname and "stat.uci.edu" not in str_hostname and "cs.uci.edu/" not in str_hostname and "informatics.uci.edu/" not in str_hostname and "today.uci.edu/department/information_computer_sciences/" not in str_hostname:
+            return False
         if parsed.scheme not in set(["http", "https"]):
             return False
         return not re.match(
