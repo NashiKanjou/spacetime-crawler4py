@@ -2,8 +2,29 @@ import re
 from urllib.parse import urlparse
 import codecs
 
+searched_list_url = list();
+
 
 def scraper(url, resp):
+    # craw
+    raw = codecs.decode(resp.raw_response.content)
+    str_word = ""
+    str_type = ""
+    bool_read = False
+    for c in raw:
+        if(c == '<'):
+            str_type = ""
+            bool_read = True
+            continue
+        if(c == '>'):
+            bool_read = False
+            str_type = str_word
+            str_word = ""
+            continue
+        if bool_read and not (str_type == "li" and str_type == "p" and str_type == "br" and str_type == "b" and str_type == "i" and str_type == "q" and str_type.startswith("h") and str_type.startswith("p style")):
+            continue
+        str_word += c
+    
     links = extract_next_links(url, resp)
     return [link for link in links if is_valid(link)]
 
@@ -20,17 +41,19 @@ def extract_next_links(url, resp):
     # Return a list with the hyperlinks (as strings) scrapped from resp.raw_response.content
     list_url = list();
     if (resp.status == 200):
-        print("from: " + resp.raw_response.url)
+        # print("from: " + resp.raw_response.url)
         cons = codecs.decode(resp.raw_response.content).split(" ")
         for con in cons:
-            if(con.startswith("href=\'") ):
+            if(con.startswith("href=\'http")):
                 url = con.split("\'")[1]
-                print(url)
-                list_url.append(url)
-            elif(con.startswith("href=\"") ):
+                if(url in searched_list_url == False):
+                    list_url.append(url)
+                    searched_list_url.append(url)
+            elif(con.startswith("href=\"http")):
                 url = con.split("\"")[1]
-                print(url)
-                list_url.append(url)
+                if(url in searched_list_url == False):
+                    list_url.append(url)
+                    searched_list_url.append(url)
     return list_url
 
 
