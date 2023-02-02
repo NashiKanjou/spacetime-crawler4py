@@ -1,12 +1,35 @@
 import re
+import html.parser
 from urllib.parse import urlparse
-import codecs
 
 searched_list_url = list();
+
 
 def scraper(url, resp):
     links = extract_next_links(url, resp)
     return [link for link in links if is_valid(link)]
+
+
+def checkNeed(str_url):
+    DateRegex = re.compile(r'\d\d\d\d-\d\d')
+    DateRegex1 = re.compile(r'\d\d\d\d/\d\d')
+    PageRegex = re.compile(r'page/\d')
+    PageRegex1 = re.compile(r'pages/\d')
+    PageRegex2 = re.compile(r'p=\d')
+    commentRegex = re.compile(r'comment-\d')
+    postRegex = re.compile(r'posts/\d')
+    bibRegex = re.compile(r'\d.bib')
+    dr = DateRegex.search(str_url)
+    dr1 = DateRegex1.search(str_url)
+    pr = PageRegex.search(str_url)
+    pr1 = PageRegex1.search(str_url)
+    pr2 = PageRegex2.search(str_url)
+    pstr = postRegex.search(str_url)
+    cmtr = commentRegex.search(str_url)
+    bibr = bibRegex.search(str_url)
+    if(dr or dr1 or pr or pr1 or pr2 or pstr or cmtr or bibr):
+        return True
+    return False
 
 
 def extract_next_links(url, resp):
@@ -19,21 +42,33 @@ def extract_next_links(url, resp):
     #         resp.raw_response.url: the url, again
     #         resp.raw_response.content: the content of the page!
     # Return a list with the hyperlinks (as strings) scrapped from resp.raw_response.content
+    searched_list_url.append(url)
     list_url = list();
     if (resp.status == 200):
         # print("from: " + resp.raw_response.url)
-        cons = codecs.decode(resp.raw_response.content).split(" ")
+        cons = str(resp.raw_response.content).split(" ")
         for con in cons:
-            if(con.startswith("href=\'")):
-                url = con.split("\'")[1]
-                if (url not in searched_list_url):
-                    list_url.append(url)
-                    searched_list_url.append(url)
-            elif(con.startswith("href=\"")):
-                url = con.split("\"")[1]
-                if (url not in searched_list_url):
-                    list_url.append(url)
-                    searched_list_url.append(url)
+            s_con = html.unescape(con).lower().replace(",", "").replace("%2f", "/").replace("%2d", "-").replace("%3a", ":")
+            if('embed?url=' in s_con):
+                s_con = s_con.split('embed?url=')[1]
+            if('embed&url=' in s_con):
+                s_con = s_con.split('embed&url=')[1]
+            if(s_con.startswith("href=\'")): 
+                url_raw = s_con.split("\'")
+                str_url = url_raw[1]
+                if(checkNeed(str_url)):
+                    continue
+                if (str_url not in searched_list_url):
+                    list_url.append(str_url)
+                    searched_list_url.append(str_url)
+            elif(s_con.startswith("href=\"")):
+                url_raw = s_con.split("\"")
+                str_url = url_raw[1]
+                if(checkNeed(str_url)):
+                    continue
+                if (str_url not in searched_list_url):
+                    list_url.append(str_url)
+                    searched_list_url.append(str_url)
     return list_url
 
 
@@ -44,7 +79,7 @@ def is_valid(url):
     try:
         parsed = urlparse(url)
         str_hostname = str(parsed.hostname)
-        if "ics.uci.edu/" not in str_hostname and "stat.uci.edu" not in str_hostname and "cs.uci.edu/" not in str_hostname and "informatics.uci.edu/" not in str_hostname and "today.uci.edu/department/information_computer_sciences/" not in str_hostname:
+        if "ics.uci.edu" not in str_hostname and "stat.uci.edu" not in str_hostname and "cs.uci.edu" not in str_hostname and "informatics.uci.edu" not in str_hostname and "today.uci.edu/department/information_computer_sciences/" not in str_hostname:
             return False
         if parsed.scheme not in set(["http", "https"]):
             return False
