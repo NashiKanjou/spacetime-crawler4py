@@ -2,10 +2,100 @@ import re
 import html.parser
 from urllib.parse import urlparse
 
+searched_url = list();
 searched_list_url = list();
+dict_words={}
+int_max=0
 
+def getDictWords():
+    global dict_words
+    
+    return dict_words
+
+def getURLList():
+    global searched_url
+    
+    return searched_url
 
 def scraper(url, resp):
+    #print("HI")
+    # get info
+    global int_max
+    list_raw = list();
+    int_count = 0
+    if (resp.status == 200):
+        global dict_words
+        b_raw = resp.raw_response.content
+        raw = ""
+        try:
+            raw = b_raw.decode('utf-8')
+        except:
+            raw = str(b_raw)
+        try:
+            raw = html.unescape(raw).replace("%09", " ").replace("\n", " ")
+        except:
+            return
+        bool_read = True
+        str_word = ""
+        html_stack = list();
+        bool_comment = False
+        for c in raw:
+                    
+            if(c == '<' and bool_read):
+                if(len(str_word) > 0 and not bool_comment):
+                    list_raw.append(str_word)
+                str_word = ""
+                bool_read = False
+                continue
+            if(c == '>' and not bool_read):
+                if(str_word.endswith("--")):
+                    bool_comment = False
+                    str_word = ""
+                    continue
+                bool_read = True
+                if(str_word.startswith("/")):
+                    str_word = ""
+                    if(html_stack):
+                        html_stack.pop()
+                    continue
+                if not(bool_comment):
+                    html_stack.append(str_word)
+                str_word = ""
+                continue
+            str_type = ""
+            if(html_stack):
+                str_type = html_stack[-1]
+            if bool_read and not str_type.startswith("/")  and not (str_type.startswith("a ") or str_type == "a" or "span" in str_type or str_type == "p" or str_type == "br" or str_type == "b" or str_type == "i" or str_type == "q" or str_type.startswith("h") or str_type.startswith("p style")):
+                continue
+            str_word += c
+            if(str_word == "!--" and not bool_read):
+                bool_comment = True
+                str_word = ""
+                
+    for rawline in list_raw:
+        list_replaced = rawline.replace(chr(9), "").replace("=","").replace(">","").replace("<","").replace("*","").replace("?","").replace(";", "").replace(":", "").replace("!", "").replace("/", " ").replace("“", "").replace("”", "").replace("-", "").replace(",", "").replace("(", "").replace(")", "").replace(".", "").replace("[", "").replace("]", "").replace("&", "").replace("\"", "").split(" ")
+        for word in list_replaced:
+            word = word.replace(" ", "");
+            if(word == " " or len(word) <= 1 and not (word == "i" or word == "a")):
+                continue
+            int_count += 1
+            if not (word in dict_words.keys()):
+                dict_words[word] = 1
+            else:
+                dict_words[word] = dict_words[word] + 1
+                        
+    if(int_count > int_max):
+        int_max = int_count
+            # end of get info
+    rawurl = url.replace("https://", "").replace("http://", "")
+    str_url = ""
+    for c in rawurl:
+        if c == "/":
+            break
+        str_url += c
+        if(str_url in searched_url):
+            searched_url.append(str_url)
+        
     links = extract_next_links(url, resp)
     return [link for link in links if is_valid(link)]
 
@@ -64,9 +154,9 @@ def extract_next_links(url, resp):
     searched_list_url.append(url)
     list_url = list();
     if (resp.status == 200):
-        #if(count == 1):
-        #    return list_url
-        #count += 1
+        if(count == 1):
+            return list_url
+        count += 1
         cons = str(resp.raw_response.content).split(" ")
         for con in cons:
             s_con = html.unescape(con).lower().replace(",", "").replace("%2f", "/").replace("%2d", "-").replace("%3a", ":")
