@@ -2,24 +2,27 @@ import re
 import html.parser
 from urllib.parse import urlparse
 
-searched_url = list();
+searched_url = {};
 searched_list_url = list();
-dict_words={}
-int_max=0
+dict_words = {}
+int_max = 0
+
 
 def getDictWords():
     global dict_words
     
     return dict_words
 
+
 def getURLList():
     global searched_url
     
     return searched_url
 
+
 def scraper(url, resp):
-    #print("HI")
     # get info
+    global searched_url
     global int_max
     list_raw = list();
     int_count = 0
@@ -40,7 +43,6 @@ def scraper(url, resp):
         html_stack = list();
         bool_comment = False
         for c in raw:
-                    
             if(c == '<' and bool_read):
                 if(len(str_word) > 0 and not bool_comment):
                     list_raw.append(str_word)
@@ -73,7 +75,7 @@ def scraper(url, resp):
                 str_word = ""
                 
     for rawline in list_raw:
-        list_replaced = rawline.replace(chr(9), "").replace("=","").replace(">","").replace("<","").replace("*","").replace("?","").replace(";", "").replace(":", "").replace("!", "").replace("/", " ").replace("“", "").replace("”", "").replace("-", "").replace(",", "").replace("(", "").replace(")", "").replace(".", "").replace("[", "").replace("]", "").replace("&", "").replace("\"", "").split(" ")
+        list_replaced = rawline.replace(chr(9), "").replace("=", "").replace(">", "").replace("<", "").replace("*", "").replace("?", "").replace(";", "").replace(":", "").replace("!", "").replace("/", " ").replace("“", "").replace("”", "").replace("-", "").replace(",", "").replace("(", "").replace(")", "").replace(".", "").replace("[", "").replace("]", "").replace("&", "").replace("\"", "").split(" ")
         for word in list_replaced:
             word = word.replace(" ", "");
             if(word == " " or len(word) <= 1 and not (word == "i" or word == "a")):
@@ -93,9 +95,10 @@ def scraper(url, resp):
         if c == "/":
             break
         str_url += c
-        if(str_url in searched_url):
-            searched_url.append(str_url)
-        
+    if (str_url not in searched_url):
+        searched_url[str_url] = 1
+    else:
+        searched_url[str_url] = searched_url[str_url] + 1
     links = extract_next_links(url, resp)
     return [link for link in links if is_valid(link)]
 
@@ -135,7 +138,6 @@ def checkNeed(str_url):
         return True
     return False
 
-
 global count;
 count = 0
 
@@ -154,7 +156,7 @@ def extract_next_links(url, resp):
     searched_list_url.append(url)
     list_url = list();
     if (resp.status == 200):
-        if(count == 1):
+        if(count == 10):
             return list_url
         count += 1
         cons = str(resp.raw_response.content).split(" ")

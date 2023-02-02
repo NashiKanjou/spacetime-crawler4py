@@ -8,6 +8,7 @@ import time
 import html.parser
 import re
 
+
 class Worker(Thread):
 
     def __init__(self, worker_id, config, frontier):
@@ -46,7 +47,7 @@ class Worker(Thread):
             str_stopwords = file_stopwords.readline()
             
         dict_words = scraper.getDictWords()
-        sorted_dict_words=dict(sorted(dict_words.items(), key=lambda x:x[1], reverse=True))
+        sorted_dict_words = dict(sorted(dict_words.items(), key=lambda x:x[1], reverse=True))
         int_count = 0
         print("Longest Site: " + str(scraper.int_max))
         print("Words")
@@ -57,12 +58,18 @@ class Worker(Thread):
             if int_count < 50:
                 print(key + " " + str(sorted_dict_words[key]))
                 int_count += 1
-                continue #remove for get all words to file
-            break #remove for get all words to file
+                continue  # remove for get all words to file
+            break  # remove for get all words to file
         f.close()
         
-        searched_url=scraper.getURLList()
-        print("URLs")
-        for url in searched_url:
-            print(url)
+        list_rawurl = scraper.getURLList()
+        
+        searched_url = {}
+        for rurl in list_rawurl:
+            if "ics.uci.edu" in rurl:
+                searched_url[rurl] = list_rawurl[rurl]
+        sorted_searched_url = dict(sorted(searched_url.items(), key=lambda x:x[0], reverse=False))
+        print("URLs :" + str(len(sorted_searched_url)))
+        for url in sorted_searched_url.keys():
+            print(url + ": " + str(sorted_searched_url[url]))
         
