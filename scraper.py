@@ -8,14 +8,60 @@ dict_words = {}
 int_max = 0
 
 
-def readFile():
-    return readDictFromFile("dictdata.txt")
+def readWordFile():
+    return readDictFromFile("dictWordData.txt")
 
 
-def writeFile(dict_f):
-    writeDictToFile("dictdata.txt", dict_f)
+def writeWordFile(dict_f):
+    writeDictToFile("dictWordData.txt", dict_f)
+
+
+def readDataFile():
+    return readDictFromFile("Data.txt")
+
+
+def writeDataFile(dict_f):
+    writeDictToFile("Data.txt", dict_f)
 
     
+def readURLDFile():
+    return readDictFromFile("dictURLData.txt")
+
+
+def writeURLDFile(dict_f):
+    writeDictToFile("dictURLData.txt", dict_f)
+
+   
+def readURLLFile():
+    return readListFromFile("listURLData.txt")
+
+
+def writeURLLFile(list_f):
+    writeListToFile("listURLData.txt", dict_f) 
+
+    
+def readListFromFile(f_name):
+    list_f = list();
+    check_file = os.path.isfile(f_name)
+    if not(check_file):
+        return dict_f
+    f = open(f_name, "r")
+    raw = f.readline()
+    while(raw):
+        data = raw.remove("\n", "").remove("\r", "");
+        list_f.append(data)
+        raw = f.readline()
+    f.close()
+    return list_f
+
+
+def writeListToFile(f_name, dict_f):
+    f = open(f_name, "w+")
+    for data in dict_f():
+        f.write(data + "\r\n")
+    f.close()
+
+
 def readDictFromFile(f_name):
     dict_f = {}
     check_file = os.path.isfile(f_name)
@@ -187,9 +233,9 @@ def extract_next_links(url, resp):
     searched_list_url.append(url)
     list_url = list();
     if (resp.status == 200):
-        if(count == 10):
-            return list_url
-        count += 1
+        #if(count == 10):
+        #    return list_url
+        #count += 1
         cons = str(resp.raw_response.content).split(" ")
         for con in cons:
             s_con = html.unescape(con).lower().replace(",", "").replace("%2f", "/").replace("%2d", "-").replace("%3a", ":")

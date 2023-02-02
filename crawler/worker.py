@@ -63,13 +63,13 @@ class Worker(Thread):
         f.close()
         
         list_rawurl = scraper.getURLList()
-        
+        list_totalurl = scraper.searched_list_url
         searched_url = {}
         for rurl in list_rawurl:
             if "ics.uci.edu" in rurl:
                 searched_url[rurl] = list_rawurl[rurl]
         sorted_searched_url = dict(sorted(searched_url.items(), key=lambda x:x[0], reverse=False))
-        print("URLs :" + str(len(sorted_searched_url)))
+        print("URLs :" + str(len(sorted_searched_url)) + " / " + str(len(list_rawurl)) + " / " + str(len(list_totalurl)))
         for url in sorted_searched_url.keys():
             print(url + ": " + str(sorted_searched_url[url]))
         
