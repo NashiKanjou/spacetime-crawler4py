@@ -16,6 +16,7 @@ def checkNeed(str_url):
     PageRegex = re.compile(r'page/\d')
     PageRegex1 = re.compile(r'pages/\d')
     PageRegex2 = re.compile(r'p=\d')
+    tagRegex = re.compile(r'tags/\d')
     commentRegex = re.compile(r'comment-\d')
     postRegex = re.compile(r'posts/\d')
     bibRegex = re.compile(r'\d.bib')
@@ -27,7 +28,8 @@ def checkNeed(str_url):
     pstr = postRegex.search(str_url)
     cmtr = commentRegex.search(str_url)
     bibr = bibRegex.search(str_url)
-    if(dr or dr1 or pr or pr1 or pr2 or pstr or cmtr or bibr):
+    tr = tagRegex.search(str_url)
+    if(dr or dr1 or pr or pr1 or pr2 or pstr or cmtr or bibr or tr):
         return True
     return False
 
