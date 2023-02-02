@@ -8,6 +8,36 @@ dict_words = {}
 int_max = 0
 
 
+def readFile():
+    return readDictFromFile("dictdata.txt")
+
+
+def writeFile(dict_f):
+    writeDictToFile("dictdata.txt", dict_f)
+
+    
+def readDictFromFile(f_name):
+    dict_f = {}
+    check_file = os.path.isfile(f_name)
+    if not(check_file):
+        return dict_f
+    f = open(f_name, "r")
+    raw = f.readline()
+    while(raw):
+        data = raw.remove("\n", "").remove("\r", "").split(" ");
+        dict_f[data[0]] = data[1]
+        raw = f.readline()
+    f.close()
+    return dict_f
+
+
+def writeDictToFile(f_name, dict_f):
+    f = open(f_name, "w+")
+    for data in dict_f.keys():
+        f.write(data + " " + dict_f[data] + "\r\n")
+    f.close()
+
+
 def getDictWords():
     global dict_words
     
@@ -137,6 +167,7 @@ def checkNeed(str_url):
             return False
         return True
     return False
+
 
 global count;
 count = 0

@@ -5,7 +5,6 @@ from utils.download import download
 from utils import get_logger
 import scraper
 import time
-import html.parser
 import re
 
 
@@ -26,6 +25,7 @@ class Worker(Thread):
             if not tbd_url:
                 self.logger.info("Frontier is empty. Stopping Crawler.")
                 break
+            
             resp = download(tbd_url, self.config, self.logger)
             self.logger.info(
                 f"Downloaded {tbd_url}, status <{resp.status}>, "
