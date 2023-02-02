@@ -6,6 +6,7 @@ from utils import get_logger
 import scraper
 import time
 import html.parser
+import re
 
 dict_words = {}
 searched_url = list();
@@ -48,33 +49,24 @@ class Worker(Thread):
                     raw = str(b_raw)
                
                 # raw = raw.replace("\n", " ").replace("\"", "").replace(".", "").replace(",", "").replace("!", "").replace("?", "").replace(";", "").replace(":", "")
-                raw = ""
+                
                 try:
-                    raw = html.unescape(raw).replace("\n", " ")
+                    raw = html.unescape(raw).replace("%09", " ").replace("\n", " ")
                 except:
                     raw = ""
-                """
-                f = open("rawoutput.txt", "w+")
-                f.write(raw)
-                f.close()
-                return
-                """
-                
-                str_word = ""
-                str_type = ""
+                # print(raw)
                 bool_read = True
-                char_last = list();
-                html_stack = []
+                str_word = ""
+                html_stack = list();
                 bool_comment = False
                 for c in raw:
-                    if(c == '<'):
-                        # str_type = ""
-                        if(bool_read):
-                            if(len(str_word) > 0):
-                                list_raw.append(str_word)
-                                str_word = ""
-                                bool_read = False
-                                continue
+                    
+                    if(c == '<' and bool_read):
+                        if(len(str_word) > 0 and not bool_comment):
+                            list_raw.append(str_word)
+                        str_word = ""
+                        bool_read = False
+                        continue
                     if(c == '>' and not bool_read):
                         if(str_word.endswith("--")):
                             bool_comment = False
@@ -91,48 +83,28 @@ class Worker(Thread):
                             html_stack.append(str_word)
                         str_word = ""
                         continue
-                    
-                    if bool_read and not str_type.startswith("/")  and not (str_type.startswith("a ")and str_type == "a" and "span" in str_type and str_type == "p" and str_type == "br" and str_type == "b" and str_type == "i" and str_type == "q" and str_type.startswith("h") and str_type.startswith("p style")):
-                        continue
-                        
                     str_type = ""
                     if(html_stack):
                         str_type = html_stack[-1]
-                    if bool_read and not ("/" not in str_type and str_type == "li" and str_type == "p" and str_type == "br" and str_type == "b" and str_type == "i" and str_type == "q" and str_type.startswith("h") and str_type.startswith("p style")):
+                        # print(str_type)
+                    if bool_read and not str_type.startswith("/")  and not (str_type.startswith("a ") or str_type == "a" or "span" in str_type or str_type == "p" or str_type == "br" or str_type == "b" or str_type == "i" or str_type == "q" or str_type.startswith("h") or str_type.startswith("p style")):
                         continue
-                    if(c == '\\'):
-                        if(char_last):
-                            if (char_last[-1] == '\\'):
-                                str_word += c
-                                char_last.append("")
-                            else:
-                                char_last.append(c)
-                        else:
-                            char_last.append(c)
-                            if(len(char_last) > 3):
-                                char_last.pop()
-                        continue
-                    if(c == 'n' and char_last):
-                        if (char_last[-1] == '\\' and len(str_word) > 0):
-                            list_raw.append(str_word)
-                            str_word = ""
-                            continue
                     str_word += c
-                    if(str_word == "!--" and char_last[0] == '<'):
+                    if(str_word == "!--" and not bool_read):
                         bool_comment = True
-                    char_last.append(c)
-                    if(len(char_last) > 3):
-                        char_last.pop()
-            
+                        str_word = ""
+                
             for rawline in list_raw:
-                list_replaced = rawline.split(" ")
+                list_replaced = rawline.replace("-", "").replace(",", "").replace("(", "").replace(")", "").replace(".", "").replace("[", "").replace("]", "").replace("&", "").replace("\"", "").split(" ")
                 for word in list_replaced:
+                    if(word == " " or len(word) <= 1 and not (word == "i" or word == "a")):
+                        continue
                     int_count += 1
                     if not (word in dict_words.keys()):
                         dict_words[word] = 1
                     else:
                         dict_words[word] = dict_words[word] + 1
-               
+                
             '''         
             page = etree.HTML(html)
             for str_v in page.xpath(u"XPath語法"):
@@ -168,22 +140,23 @@ class Worker(Thread):
         
         list_stopword = list();
         file_stopwords = open("stopword.txt", "r")
-        str_stopwods = file_stopwords.readline()
-        while len(str_stopwods) > 0:
-            list_stopword.append(str_stopwods)
-            str_stopwods = file_stopwords.readline()
+        str_stopwords = file_stopwords.readline()
+        while len(str_stopwords) > 0:
+            str_stopwords = re.sub('[^0-9a-zA-Z]+', '', str_stopwords)
+            list_stopword.append(str_stopwords)
+            str_stopwords = file_stopwords.readline()
         sorted(dict_words.items(), key=lambda x:x[1], reverse=True)
         int_count = 0
         print("Longest Site: " + str(int_max))
         print("Words")
         for key in dict_words.keys():
-            f.write(key + "\r\n")
+            f.write(key + " " + str(dict_words[key]) + "\r\n")
             if(key in list_stopword):
+                # print(key + " STOP")
                 continue
             if int_count < 50:
                 print(key + " " + str(dict_words[key]))
-                # break
-            int_count += 1
+                int_count += 1
         f.close()
         print("URLs")
         for url in searched_url:

@@ -13,9 +13,9 @@ def scraper(url, resp):
 def checkNeed(str_url):
     DateRegex = re.compile(r'\d\d\d\d-\d\d')
     DateRegex1 = re.compile(r'\d\d\d\d/\d\d')
-    PageRegex = re.compile(r'page/\d')
-    PageRegex1 = re.compile(r'pages/\d')
-    PageRegex2 = re.compile(r'p=\d')
+    PageRegex = re.compile(r'(page/)(\d)')
+    PageRegex1 = re.compile(r'(pages/)(\d)')
+    PageRegex2 = re.compile(r'(p=)(\d)')
     tagRegex = re.compile(r'tags/\d')
     commentRegex = re.compile(r'comment-\d')
     postRegex = re.compile(r'posts/\d')
@@ -29,12 +29,29 @@ def checkNeed(str_url):
     cmtr = commentRegex.search(str_url)
     bibr = bibRegex.search(str_url)
     tr = tagRegex.search(str_url)
-    if(dr or dr1 or pr or pr1 or pr2 or pstr or cmtr or bibr or tr):
+    if(dr or dr1 or pstr or cmtr or bibr or tr):
+        return True
+    if(pr):
+        if(pr.group(1) == "1"):
+            return False
+        return True
+    if(pr1):
+        if(pr1.group(1) == "1"):
+            return False
+        return True
+    if(pr2):
+        if(pr2.group(1) == "1"):
+            return False
         return True
     return False
 
 
+global count;
+count = 0
+
+
 def extract_next_links(url, resp):
+    global count
     # Implementation required.
     # url: the URL that was used to get the page
     # resp.url: the actual url of the page
@@ -47,7 +64,9 @@ def extract_next_links(url, resp):
     searched_list_url.append(url)
     list_url = list();
     if (resp.status == 200):
-        # print("from: " + resp.raw_response.url)
+        #if(count == 1):
+        #    return list_url
+        #count += 1
         cons = str(resp.raw_response.content).split(" ")
         for con in cons:
             s_con = html.unescape(con).lower().replace(",", "").replace("%2f", "/").replace("%2d", "-").replace("%3a", ":")
