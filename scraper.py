@@ -2,10 +2,14 @@ import re
 import html.parser
 from urllib.parse import urlparse
 
-searched_url = {};
-searched_list_url = list();
-dict_words = {}
-int_max = 0
+searched_url = {};  # this is for the checking if pages are from same URL 
+# (the part after '/' are removed)
+# for step in the assignment 2, I looped through this dict and get the url contains ics uci, 
+# there are some url have different ports, I still see them as different URL
+
+searched_list_url = list();  # this is all of the URL that has been searched
+dict_words = {}  # for counting words
+int_max = 0  # the max num of words in a page
 
 
 def readWordFile():
@@ -180,6 +184,15 @@ def scraper(url, resp):
 
 
 def checkNeed(str_url):
+    # TRUE = SKIP
+    # FALSE = will be searched
+    
+    sliHandler = "sli.ics.uci.edu"
+    commentHandler = '#comment'
+    respondHandler = '#respond'
+    actionHandler = "action="
+    # check for url about ics.uci are in the is_valid function, see line 284
+    
     DateRegex = re.compile(r'\d\d\d\d-\d\d')
     DateRegex1 = re.compile(r'\d\d\d\d/\d\d')
     PageRegex = re.compile(r'(page/)(\d)')
@@ -198,6 +211,10 @@ def checkNeed(str_url):
     cmtr = commentRegex.search(str_url)
     bibr = bibRegex.search(str_url)
     tr = tagRegex.search(str_url)
+    if(actionHandler in str_url or commentHandler in str_url or respondHandler in str_url):
+        return True
+    if(sliHandler in str_url):
+        return True
     if(dr or dr1 or pstr or cmtr or bibr or tr):
         return True
     if(pr):
@@ -233,9 +250,9 @@ def extract_next_links(url, resp):
     searched_list_url.append(url)
     list_url = list();
     if (resp.status == 200):
-        #if(count == 10):
+        # if(count == 10):
         #    return list_url
-        #count += 1
+        # count += 1
         cons = str(resp.raw_response.content).split(" ")
         for con in cons:
             s_con = html.unescape(con).lower().replace(",", "").replace("%2f", "/").replace("%2d", "-").replace("%3a", ":")
@@ -259,6 +276,10 @@ def extract_next_links(url, resp):
                 if (str_url not in searched_list_url):
                     list_url.append(str_url)
                     searched_list_url.append(str_url)
+    if(resp.status >= 600):
+        print("the error is ")
+        print(resp.error)
+        print()
     return list_url
 
 
